@@ -59,30 +59,36 @@ def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
 
     # predict1
     conv_1x1_layer7 = tf.layers.conv2d(vgg_layer7_out, num_classes, 1, padding='same',
-                                       kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3))
+                                       kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3),
+                                       kernel_initializer=tf.truncated_normal_initializer(stddev=0.01))
     # Deconv1
     upsampling1 = tf.layers.conv2d_transpose(conv_1x1_layer7, num_classes, 4, strides=(2, 2), padding='same',
-                                             kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3))
+                                             kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3),
+                                             kernel_initializer=tf.truncated_normal_initializer(stddev=0.01))
 
     # predict2
     conv_1x1_layer4 = tf.layers.conv2d(vgg_layer4_out, num_classes, 1, padding='same',
-                                       kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3))
+                                       kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3),
+                                       kernel_initializer=tf.truncated_normal_initializer(stddev=0.01))
 
     skip1 = tf.add(conv_1x1_layer4, upsampling1)
 
     # Deconv2
     upsampling2 = tf.layers.conv2d_transpose(skip1, num_classes, 4, strides=(2, 2), padding='same',
-                                             kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3))
+                                             kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3),
+                                             kernel_initializer=tf.truncated_normal_initializer(stddev=0.01))
 
     # Predict3
     conv_1x1_layer3 = tf.layers.conv2d(vgg_layer3_out, num_classes, 1, padding='same',
-                                       kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3))
+                                       kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3),
+                                       kernel_initializer=tf.truncated_normal_initializer(stddev=0.01))
 
     skip2 = tf.add(conv_1x1_layer3, upsampling2)
 
     # Deconv3
     upsampling3 = tf.layers.conv2d_transpose(skip2, num_classes, 16, strides=(8, 8), padding='same',
-                                             kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3))
+                                             kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3),
+                                             kernel_initializer=tf.truncated_normal_initializer(stddev=0.01))
 
     tf.Print(upsampling3, [tf.shape(upsampling3)[1:3]])
 
@@ -141,7 +147,7 @@ def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_l
         for image, label in get_batches_fn(batch_size):
             # Training
             _, loss = sess.run([train_op, cross_entropy_loss],
-                               feed_dict={input_image: image, correct_label: label,learning_rate:1e-3,
+                               feed_dict={input_image: image, correct_label: label,learning_rate:1e-4,
                                           keep_prob: 0.5})
             print('loss = {:.3}f'.format(loss))
     # for epoch in range(epochs):
@@ -165,7 +171,7 @@ def run():
     tests.test_for_kitti_dataset(data_dir)
 
     epochs = 35
-    batch_size = 5
+    batch_size = 3
     # Download pretrained vgg model
     helper.maybe_download_pretrained_vgg(data_dir)
 
